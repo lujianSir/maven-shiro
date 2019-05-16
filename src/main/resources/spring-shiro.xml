@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/toLogin"/><!--登录页面，-->
+        <property name="successUrl" value="/success"/><!--登录成功页面，如果自己设置了返回页面，则不跳转-->
+        <property name="unauthorizedUrl" value="/error"/><!-- 没有权限跳转的地址 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /toLogin=anon <!--表示都可以访问-->
+                /error=authc
+                /user/** = authc
+                /test=anon
+                /login=anon
+                /home=perms[home] <!--perms表示需要该权限才能访问的页面-->
+                /check=perms[check] 
+                /admin=roles["admin"] <!-- roles["admin,user"] 只有拥有admin角色的用户才可访问，同时需要拥有多个角色的话，用引号引起来，中间用逗号隔开-->
+                <!--/admin=anon-->
+                /**=authc <!--authc表示需要认证才能访问的页面-->
+            </value>
+        </property>
+    </bean>
+
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="MyRealm"/>
+    </bean>
+
+    <!-- 自定义Realm -->
+    <bean id="MyRealm" class="com.dh.shiro.MyRealm">
+        <!-- 定义凭证匹配器 -->
+        <!-- <property name="credentialsMatcher" ref="credentialsMatcher"></property> -->
+    </bean>
+
+    <!-- 凭证匹配器 org.apache.shiro.authc.credential.HashedCredentialsMatcher-->
+    <bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <!-- 加密算法名称 -->
+        <property name="hashAlgorithmName" value="MD5"></property>
+        <!-- 散列次数 -->
+        <!--<property name="hashIterations" value="2"></property>-->
+    </bean>
+
+</beans>
